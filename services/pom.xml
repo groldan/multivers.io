@@ -12,5 +12,6 @@
     <module>discovery</module>
     <module>config</module>
     <module>gateway</module>
+    <module>features</module>
   </modules>
 </project>
