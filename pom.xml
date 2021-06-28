@@ -1,11 +1,12 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>2.5.2</version>
-    <relativePath /> <!-- lookup parent from repository -->
+    <relativePath></relativePath>
+    <!-- lookup parent from repository -->
   </parent>
 
   <groupId>io.multivers</groupId>
@@ -15,11 +16,14 @@
 
   <name>Multivers.io Root POM</name>
   <url>https://multivers.io</url>
+  <modules>
+    <module>services</module>
+  </modules>
 
   <properties>
     <revision>0.1-SNAPSHOT</revision>
     <java.version>11</java.version>
-    <repackage.classifier />
+    <repackage.classifier></repackage.classifier>
     <spring-cloud.version>2020.0.3</spring-cloud.version>
     <spring-native.version>0.10.1</spring-native.version>
     <native-buildtools.version>0.9.0</native-buildtools.version>
@@ -32,29 +36,6 @@
 
     <geogig.version>2.0-SNAPSHOT</geogig.version>
   </properties>
-  <modules>
-    <module>services</module>
-  </modules>
-  <repositories>
-    <repository>
-      <id>spring-releases</id>
-      <name>Spring Releases</name>
-      <url>https://repo.spring.io/release</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
-  <pluginRepositories>
-    <pluginRepository>
-      <id>spring-releases</id>
-      <name>Spring Releases</name>
-      <url>https://repo.spring.io/release</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </pluginRepository>
-  </pluginRepositories>
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -86,6 +67,26 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+  <repositories>
+    <repository>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>spring-releases</id>
+      <name>Spring Releases</name>
+      <url>https://repo.spring.io/release</url>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>spring-releases</id>
+      <name>Spring Releases</name>
+      <url>https://repo.spring.io/release</url>
+    </pluginRepository>
+  </pluginRepositories>
   <build>
     <pluginManagement>
       <plugins>
@@ -107,7 +108,6 @@
           <groupId>org.springframework.experimental</groupId>
           <artifactId>spring-aot-maven-plugin</artifactId>
           <version>${spring-native.version}</version>
-          <inherited>true</inherited>
           <executions>
             <execution>
               <id>test-generate</id>
@@ -122,12 +122,12 @@
               </goals>
             </execution>
           </executions>
+          <inherited>true</inherited>
         </plugin>
         <plugin>
           <groupId>org.graalvm.buildtools</groupId>
           <artifactId>native-maven-plugin</artifactId>
           <version>${native-buildtools.version}</version>
-          <inherited>true</inherited>
           <executions>
             <execution>
               <id>test-native</id>
@@ -144,11 +144,17 @@
               </goals>
             </execution>
           </executions>
+          <inherited>true</inherited>
         </plugin>
         <plugin>
           <groupId>com.coveo</groupId>
           <artifactId>fmt-maven-plugin</artifactId>
           <version>${fmt.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>com.github.ekryd.sortpom</groupId>
+          <artifactId>sortpom-maven-plugin</artifactId>
+          <version>2.15.0</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -168,6 +174,26 @@
           <filesNamePattern>.*\.java</filesNamePattern>
           <skip>${fmt.skip}</skip>
           <style>aosp</style>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.github.ekryd.sortpom</groupId>
+        <artifactId>sortpom-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>verify</phase>
+            <goals>
+              <goal>${pom.fmt.action}</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <skip>${pom.fmt.skip}</skip>
+          <keepBlankLines>true</keepBlankLines>
+          <spaceBeforeCloseEmptyElement>false</spaceBeforeCloseEmptyElement>
+          <createBackupFile>false</createBackupFile>
+          <verifyFail>stop</verifyFail>
+          <verifyFailOn>strict</verifyFailOn>
         </configuration>
       </plugin>
     </plugins>
