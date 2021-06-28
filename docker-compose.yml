@@ -1,0 +1,98 @@
+version: "3.8"
+
+volumes:
+  rabbitmq_data: # volume for rabbitmq data, so it doesn't create an anonymous one on each container
+  
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1G
+
+  # Eureka service discovery. This is a Discovery First Bootstrap configuration.
+  # The discovery service is the only fixed entry point.
+  # Browse to http://localhost:8761 to check all services are registered.
+  # Run docker-compose -f docker-compose.yml -f docker-compose-discovery-ha.yml to run extra discovery service instances for HA
+  discovery:
+    image: multiversio/discovery-service:${TAG}
+    environment:
+      SERVER_PORT: 8761
+      EUREKA_INSTANCE_HOSTNAME: discovery
+      JAVA_TOOL_OPTIONS:
+    ports:
+      - 8761:8761 # for development, so services can be run from localhost and find the discovery service running on docker
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1G
+
+  # Spring Cloud Config service, provides centralized configuration to all
+  # microservices. Being a Discovery First Bootstrap configuration, it'll
+  # register itself with the Eureka discovery service and can be scaled
+  config:
+    image: multiversio/config-service:${TAG}
+    depends_on:
+      - discovery
+    environment:
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+      RABBITMQ_HOST: rabbitmq
+      # Either 'git' or 'native'. Use the default sample git repository to download the services configuration from
+      # If 'git', BEWARE config server will look for a branch called "master", and github changed the default branch name to "main"
+      # For more information, see https://cloud.spring.io/spring-cloud-config/multi/multi__spring_cloud_config_server.html#_git_backend
+      SPRING_PROFILES_ACTIVE: native
+      # 'git' profile config
+      CONFIG_GIT_BASEDIR: /opt/app/git_config
+      # 'native' profile config
+      CONFIG_NATIVE_PATH: /opt/app/config
+    volumes:
+      - ./config:/opt/app/config
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 512M
+
+  # Application facade, provides a single entry point routing to all
+  # publicly accessible microservices (http://localhost:10000/**)
+  gateway:
+    image: multiversio/gateway-service:${TAG}
+    depends_on:
+      - discovery
+      - config
+    environment:
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+    ports:
+      - 9090:8080
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 1G
+
+  features:
+    image: multiversio/feature-service:${TAG}
+    depends_on:
+      - discovery
+      - config
+      - rabbitmq
+    environment:
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+      RABBITMQ_HOST: rabbitmq
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1G
