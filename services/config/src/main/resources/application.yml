@@ -1,0 +1,90 @@
+info:
+  component: Config Server
+  #instance-id: ${spring.application.name}:${spring.application.instance_id:${spring.cloud.client.ip-address}}:${server.port}
+  instance-id: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${spring.cloud.client.ip-address}}:${server.port}}
+
+server:
+  port: 8080
+  tomcat:
+    max-connections: 1024    
+    threads:
+      min-spare: 1
+      max: 25
+spring:
+  main.banner-mode: off
+  application.name: config-service
+  config.name: config-service
+  #use native filesystem config by default instead of git.
+  profiles.active: ${config.profile:native}
+  #autoconfigure.exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+  jmx.enabled: false
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_URSER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+  cloud:
+    config:
+      discovery:
+        enabled: false
+        service-id: ${spring.application.name}
+      server: # see https://cloud.spring.io/spring-cloud-config/reference/html/#_spring_cloud_config_server
+        enabled: true
+        git:
+          #https://github.com/spring-cloud-samples/config-repo
+          uri: ${config.git.uri} 
+          #repos:
+          #  - patterns: multi-repo-demo-*
+          #    uri: https://github.com/spring-cloud-samples/config-repo
+          skip-ssl-validation: true
+          timeout: 10
+          # Default value of 0 makes the git backend fetch updated configuration from the Git repo every time it is requested
+          refresh-rate: 30
+          # where to store the cloned repository, if unset, it'll use /tmp/config-repo-<randomid>
+          basedir: ${config.git.basedir:/${java.io.tmpdir}/multiversio_git_config}
+        native:
+          search-locations:
+          - ${config.native.path}
+
+eureka:
+  instance:
+    appname: ${spring.application.name}
+    instance-id: ${info.instance-id}
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+  client:
+    enabled: true
+    register-with-eureka: true
+    fetch-registry: true
+    registry-fetch-interval-seconds: 30
+    service-url:
+      defaultZone: ${eureka.server.url:http://localhost:8761/eureka} 
+    healthcheck:
+      enabled: true
+
+management:
+  info:
+    build.enabled: true
+    env.enabled: true
+    git:
+      enabled: true
+      mode: full
+  endpoint:
+    info.enabled: true
+    metrics.enabled: true
+    health.enabled: true
+    health.probes.enabled: true
+    prometheus.enabled: true
+  endpoints:
+    enabled-by-default: true
+    web.exposure.include: "*"
+
+logging:
+  level:
+    org.springframework: INFO
+    org.springframework.cloud: INFO
+#    # Avoid log flooding with "INFO Adding property source: file:<...>/application.yml" triggered by the actuator health check
+#    org.springframework.cloud.config.server.environment.NativeEnvironmentRepository: WARN
+    org.springframework.retry: DEBUG
+    # Avoid log flooding with "INFO Adding property source: file:<...>/application.yml" triggered by the actuator health check
+    org.springframework.cloud.config.server.environment.NativeEnvironmentRepository: WARN

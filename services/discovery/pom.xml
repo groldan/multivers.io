@@ -27,16 +27,6 @@
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-configuration-processor</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
@@ -46,6 +36,20 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <image>
+            <pullPolicy>IF_NOT_PRESENT</pullPolicy>
+            <env>
+              <!-- Builder config options -->
+              <BP_JVM_VERSION>11</BP_JVM_VERSION>
+              <!-- Runtime config options -->
+              <!-- Allow running on low-resource provisioned containers, this service doesn't need much -->
+              <BPE_JAVA_TOOL_OPTIONS>-Xss256K -XX:ReservedCodeCacheSize=64M -XX:MaxMetaspaceSize=128M</BPE_JAVA_TOOL_OPTIONS>
+              <BPE_OVERRIDE_BPL_JVM_THREAD_COUNT>25</BPE_OVERRIDE_BPL_JVM_THREAD_COUNT>
+              <BPL_JVM_THREAD_COUNT>25</BPL_JVM_THREAD_COUNT>
+            </env>
+          </image>
+        </configuration>
       </plugin>
     </plugins>
   </build>

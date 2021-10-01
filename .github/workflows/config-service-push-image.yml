@@ -1,0 +1,45 @@
+name: "config-service"
+on:
+  push:
+    tags:
+      - '*'
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+    - name: "Check out and set up Java and maven cache"
+      uses: actions/checkout@v2
+      uses: actions/setup-java@v2
+      with:
+        distribution: 'adopt-hotspot'
+        java-version: '11'
+        check-latest: true
+        cache: 'maven'
+
+    - name: Login to Docker Hub
+      if: github.repository == 'multiversio/multivers.io'
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+    - name: "Build docker image"
+      if: github.repository == 'multiversio/multivers.io'
+      run: ./mvnw spring-boot:build-image -f services/config/ -ntp -Dfmt.action=check -DskipTests
+
+    - name: Get version
+      run: |
+          VERSION=$( ./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout )
+          echo "::set-output name=version::$VERSION"
+      id: project
+            
+    - name: "Push docker image"
+      if: github.repository == 'multiversio/multivers.io'
+      run: |
+         echo Pushing docker image multiversio/config-service:${{ steps.project.outputs.version }}
+         docker push multiversio/config-service:${{ steps.project.outputs.version }}
+      
