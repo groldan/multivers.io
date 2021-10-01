@@ -11,8 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-    - name: "Check out and set up Java and maven cache"
+    - name: "Check out"
       uses: actions/checkout@v2
+    - name: "Set up Java and maven cache"
       uses: actions/setup-java@v2
       with:
         distribution: 'adopt-hotspot'
