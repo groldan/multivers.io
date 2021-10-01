@@ -1,0 +1,36 @@
+server:
+  port: 9090
+  tomcat:
+    max-connections: 1024    
+    threads:
+      min-spare: 1
+      max: 25
+management:
+  info:
+    build.enabled: true
+    env.enabled: true
+    git:
+      enabled: true
+      mode: full
+  endpoint:
+    info.enabled: true
+    metrics.enabled: true
+    health.enabled: true
+    health.probes.enabled: true
+    prometheus.enabled: true
+  endpoints:
+    enabled-by-default: true
+    web.exposure.include: "*"
+
+spring:
+  main.banner-mode: off
+  application.name: config-service
+  #use native filesystem config by default instead of git.
+  profiles.active: native
+  jmx.enabled: false
+
+logging:
+  level:
+    org.springframework.retry: DEBUG
+    # Avoid log flooding with "INFO Adding property source: file:<...>/application.yml" triggered by the actuator health check
+    org.springframework.cloud.config.server.environment.NativeEnvironmentRepository: WARN

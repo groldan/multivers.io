@@ -1,0 +1,35 @@
+instance-id: ${spring.application.name}:${spring.application.instance_id:${spring.cloud.client.ip-address}}:${server.port}
+server:
+  port: 8761
+  tomcat:
+    max-connections: 1024    
+    threads:
+      min-spare: 1
+      max: 25
+spring:
+  application:
+    name: discovery-service
+  main:
+    banner-mode: off
+eureka:
+  server:
+    peer-node-read-timeout-ms: 60000
+    enable-self-preservation: true
+    eviction-interval-timer-in-ms: 10000
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 15
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+logging:
+  level:
+    root: INFO
+    com.netflix.discovery: INFO
+    com.netflix.eureka: INFO
+    com.netflix.eureka.registry.AbstractInstanceRegistry: WARN # ignore WARN No remote registry available for the remote region us-east-1
+    
