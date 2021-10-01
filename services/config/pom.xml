@@ -50,13 +50,6 @@
             </env>
             <pullPolicy>IF_NOT_PRESENT</pullPolicy>
           </image>
-          <docker>
-            <publishRegistry>
-              <username>${DOCKER_HUB_USERNAME}</username>
-              <token>${DOCKER_HUB_ACCESS_TOKEN}</token>
-              <url>https://index.docker.io/v2/</url>
-            </publishRegistry>
-          </docker>
         </configuration>
       </plugin>
       <plugin>
